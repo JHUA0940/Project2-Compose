@@ -15,7 +15,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /certs/client:/certs/client:ro
     ports:
-      - "8080:8080"
+      - "8090:8080"
       - "50000:50000"
     networks:
       - jenkins_network
