@@ -4,41 +4,38 @@ services:
   jenkins:
     image: jenkins/jenkins:lts
     container_name: jenkins
-    privileged: true
+    privileged: true  # Jenkins requires privileged mode to execute Docker commands within the container
     user: root
     environment:
-      - DOCKER_HOST=tcp://dind:2376
-      - DOCKER_CERT_PATH=/certs/client
-      - DOCKER_TLS_VERIFY=0
+      - DOCKER_HOST=tcp://dind:2376  # Specify the Docker daemon address
+      - DOCKER_TLS_VERIFY=0          # Disable TLS verification for Docker
     volumes:
-      - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
-#      - /certs/client:/certs/client:ro
+      - jenkins_home:/var/jenkins_home  # Mount persistent volume for Jenkins data
+      - /var/run/docker.sock:/var/run/docker.sock  # Mount Docker socket from the host
     ports:
-      - "8090:8080"
-      - "50000:50000"
+      - "8090:8080"  # Port for Jenkins Web UI
+      - "50000:50000"  # Port for Jenkins agent communication
     networks:
       - jenkins_network
     depends_on:
-      - dind
+      - dind  # Ensure that dind service starts before Jenkins
 
   dind:
     image: docker:20.10.24-dind
     container_name: dind
-    privileged: true
+    privileged: true  # DinD (Docker-in-Docker) requires privileged mode to function properly
     environment:
-      - DOCKER_TLS_CERTDIR=/certs
+      - DOCKER_TLS_CERTDIR=  # Disable automatic TLS certificate generation for DinD
     volumes:
-      - dind_storage:/var/lib/docker
-      - /certs/client
+      - dind_storage:/var/lib/docker  # Persistent volume for Docker data
     ports:
-      - "2376:2376"
+      - "2376:2376"  # Port for Docker daemon (DinD)
     networks:
       - jenkins_network
 
 networks:
-  jenkins_network:
+  jenkins_network:  # Custom network to ensure communication between Jenkins and DinD
 
 volumes:
-  jenkins_home:
-  dind_storage:
+  jenkins_home:  # Persistent volume for Jenkins data
+  dind_storage:  # Persistent volume for Docker data (DinD)
