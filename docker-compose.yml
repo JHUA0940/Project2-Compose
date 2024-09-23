@@ -2,26 +2,30 @@ version: '3.8'
 
 services:
   jenkins:
-    image: jenkins/jenkins:lts
+    image: custom-jenkins:latest  # 使用自定义 Jenkins 镜像
     container_name: jenkins
     user: root
     ports:
-      - "8090:8080"
-      - "50000:50000"
+      - "8090:8080"  # Jenkins Web 界面
+      - "50000:50000"  # Jenkins 代理端口
     volumes:
-      - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock # 允许 Jenkins 容器访问主机的 Docker 守护进程
+      - jenkins_home:/var/jenkins_home  # Jenkins 数据存储
     environment:
+      - DOCKER_HOST=tcp://dind:2375  # 让 Jenkins 使用 dind 容器的 Docker 守护进程
       - JENKINS_OPTS=--prefix=/jenkins
+    depends_on:
+      - dind  # 确保 dind 服务先启动
     networks:
       - jenkins_network
 
   dind:
     image: docker:19.03-dind
     container_name: dind
-    privileged: true # 允许 Docker 在 Docker 中运行
+    privileged: true  # 允许 Docker 在 Docker 中运行
+    ports:
+      - "2375:2375"  # 暴露 Docker 守护进程端口
     volumes:
-      - dind_storage:/var/lib/docker
+      - dind_storage:/var/lib/docker  # Docker 数据存储
     networks:
       - jenkins_network
 
