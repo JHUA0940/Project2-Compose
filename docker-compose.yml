@@ -1,40 +1,38 @@
-version: '3.8'
-
 services:
   jenkins:
-    image: jenkins/jenkins:lts
+    image: jenkinsci/blueocean  # Use a Jenkins image with Docker client included
     container_name: jenkins
-    privileged: true  # Jenkins requires privileged mode to execute Docker commands within the container
+    privileged: true  # Privileged mode is required for Docker commands to work inside the container
     user: root
     environment:
       - DOCKER_HOST=tcp://dind:2376  # Specify the Docker daemon address
       - DOCKER_TLS_VERIFY=0          # Disable TLS verification for Docker
     volumes:
-      - jenkins_home:/var/jenkins_home  # Mount persistent volume for Jenkins data
-      - /var/run/docker.sock:/var/run/docker.sock  # Mount Docker socket from the host
+      - jenkins_home:/var/jenkins_home  # Persistent storage for Jenkins data
+      - /var/run/docker.sock:/var/run/docker.sock  # Mount Docker socket for direct communication with the host
     ports:
       - "8090:8080"  # Port for Jenkins Web UI
       - "50000:50000"  # Port for Jenkins agent communication
     networks:
       - jenkins_network
     depends_on:
-      - dind  # Ensure that dind service starts before Jenkins
+      - dind  # Ensure that the dind service starts before Jenkins
 
   dind:
     image: docker:20.10.24-dind
     container_name: dind
-    privileged: true  # DinD (Docker-in-Docker) requires privileged mode to function properly
+    privileged: true  # Privileged mode is required for Docker-in-Docker to function correctly
     environment:
-      - DOCKER_TLS_CERTDIR=  # Disable automatic TLS certificate generation for DinD
+      - DOCKER_TLS_CERTDIR=  # Disable TLS directory to prevent automatic certificate generation
     volumes:
-      - dind_storage:/var/lib/docker  # Persistent volume for Docker data
+      - dind_storage:/var/lib/docker  # Persistent storage for Docker data
     ports:
       - "2376:2376"  # Port for Docker daemon (DinD)
     networks:
       - jenkins_network
 
 networks:
-  jenkins_network:  # Custom network to ensure communication between Jenkins and DinD
+  jenkins_network:  # Custom network to ensure communication between Jenkins and DinD containers
 
 volumes:
   jenkins_home:  # Persistent volume for Jenkins data
