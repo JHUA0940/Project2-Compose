@@ -2,31 +2,31 @@ version: '3.8'
 
 services:
   jenkins:
-    image: custom-jenkins:latest  # 使用自定义 Jenkins 镜像
+    image: custom-jenkins:latest
     container_name: jenkins
     user: root
     ports:
-      - "8090:8080"  # Jenkins Web 界面
-      - "50000:50000"  # Jenkins 代理端口
+      - "8090:8080"
+      - "50000:50000"
     volumes:
-      - jenkins_home:/var/jenkins_home  # Jenkins 数据存储
+      - jenkins_home:/var/jenkins_home
     environment:
-      - DOCKER_HOST=tcp://dind:2375  # 让 Jenkins 使用 dind 容器的 Docker 守护进程
+      - DOCKER_HOST=tcp://dind:2375
       - JENKINS_OPTS=--prefix=/jenkins
     depends_on:
-      - dind  # 确保 dind 服务先启动
+      - dind
     networks:
       - jenkins_network
 
   dind:
     image: docker:19.03-dind
     container_name: dind
-    privileged: true  # 允许 Docker 在 Docker 中运行
-    command: ["dockerd", "--host=tcp://0.0.0.0:2375", "--host=unix:///var/run/docker.sock", "--storage-driver=overlay2"]  # 覆盖默认启动命令，禁用 TLS 并在 2375 端口启用 Docker 守护进程
+    privileged: true
+    command: ["--host=tcp://0.0.0.0:2375", "--host=unix:///var/run/docker.sock"]
     ports:
-      - "2375:2375"  # 暴露 Docker 守护进程端口，供 Jenkins 使用
+      - "2375:2375"
     volumes:
-      - dind_storage:/var/lib/docker  # 持久化 Docker 数据
+      - dind_storage:/var/lib/docker
     networks:
       - jenkins_network
 
@@ -38,4 +38,5 @@ volumes:
 
 networks:
   jenkins_network:
-    driver: bridge
+    external:
+      name: project2-compose_jenkins_network  # 指定已有的外部网络
