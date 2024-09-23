@@ -22,6 +22,7 @@ services:
     image: docker:19.03-dind
     container_name: dind
     privileged: true  # 允许 Docker 在 Docker 中运行
+    command: ["--host=tcp://0.0.0.0:2375", "--host=unix:///var/run/docker.sock"]  # 禁用 TLS 并在 2375 端口上启用 Docker 守护进程
     ports:
       - "2375:2375"  # 暴露 Docker 守护进程端口，供 Jenkins 使用
     volumes:
