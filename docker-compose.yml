@@ -16,7 +16,7 @@ services:
     depends_on:
       - dind
     networks:
-      - project2-compose_project_network  # 使用自动生成的网络名称
+      - project2-compose_project_network  # 确保网络名称正确
 
   dind:
     image: docker:19.03-dind
@@ -28,7 +28,7 @@ services:
     volumes:
       - dind_storage:/var/lib/docker
     networks:
-      - project2-compose_project_network  # 使用自动生成的网络名称
+      - project2-compose_project_network  # 确保网络名称正确
 
 volumes:
   jenkins_home:
@@ -38,4 +38,4 @@ volumes:
 
 networks:
   project2-compose_project_network:
-    external: true  # 指定为外部网络
+    external: true  # 指定为外部网络，防止 Docker 自动生成
