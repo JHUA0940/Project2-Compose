@@ -4,41 +4,33 @@ services:
   jenkins:
     image: jenkins/jenkins:lts
     container_name: jenkins
-    privileged: true  # Required to allow Jenkins to run Docker commands inside the container
-    user: root  # Run as root user for permissions to access Docker
-    environment:
-      - DOCKER_HOST=tcp://dind:2376  # Set Docker host to communicate with the DinD service
-      - DOCKER_CERT_PATH=/certs/client  # Path to Docker certificates
-      - DOCKER_TLS_VERIFY=0  # Disable TLS verification for communication
-    volumes:
-      - jenkins_home:/var/jenkins_home  # Persist Jenkins data
-      - /var/run/docker.sock:/var/run/docker.sock  # Mount Docker socket for communication with the host
-      - /certs/client:/certs/client:ro  # Mount certificates directory for Docker client
+    user: root
     ports:
-      - "8090:8080"  # Port for Jenkins Web UI
-      - "50000:50000"  # Port for Jenkins agent communication
+      - "8090:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock # 允许 Jenkins 容器访问主机的 Docker 守护进程
+    environment:
+      - JENKINS_OPTS=--prefix=/jenkins
     networks:
       - jenkins_network
-    depends_on:
-      - dind  # Ensure that DinD service is started before Jenkins
 
   dind:
-    image: docker:20.10.24-dind
+    image: docker:19.03-dind
     container_name: dind
-    privileged: true  # Required for Docker-in-Docker functionality
-    environment:
-      - DOCKER_TLS_CERTDIR=/certs  # Enable TLS directory for Docker certificates
+    privileged: true # 允许 Docker 在 Docker 中运行
     volumes:
-      - dind_storage:/var/lib/docker  # Persist Docker data for DinD
-      - /certs/client  # Mount certificates directory
-    ports:
-      - "2376:2376"  # Port for Docker daemon communication
+      - dind_storage:/var/lib/docker
     networks:
       - jenkins_network
 
-networks:
-  jenkins_network:  # Custom network for communication between Jenkins and DinD
-
 volumes:
-  jenkins_home:  # Jenkins data volume
-  dind_storage:  # DinD data volume
+  jenkins_home:
+    driver: local
+  dind_storage:
+    driver: local
+
+networks:
+  jenkins_network:
+    driver: bridge
