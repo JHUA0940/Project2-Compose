@@ -16,19 +16,19 @@ services:
     depends_on:
       - dind
     networks:
-      - jenkins_network
+      - project2-compose_jenkins_network
 
   dind:
     image: docker:19.03-dind
     container_name: dind
     privileged: true
-    command: ["--host=tcp://0.0.0.0:2375", "--host=unix:///var/run/docker.sock"]
+    command: ["dockerd", "--host=tcp://0.0.0.0:2375", "--host=unix:///var/run/docker.sock"]  # 移除所有 TLS 相关参数，确保只监听 2375 端口
     ports:
       - "2375:2375"
     volumes:
       - dind_storage:/var/lib/docker
     networks:
-      - jenkins_network
+      - project2-compose_jenkins_network
 
 volumes:
   jenkins_home:
@@ -37,6 +37,5 @@ volumes:
     driver: local
 
 networks:
-  jenkins_network:
-    external:
-      name: project2-compose_jenkins_network  # 指定已有的外部网络
+  project2-compose_jenkins_network:
+    driver: bridge
