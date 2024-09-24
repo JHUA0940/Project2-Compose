@@ -3,7 +3,6 @@ version: '3.8'
 services:
   jenkins:
     image: custom-jenkins:latest
-    container_name: jenkins
     user: root
     ports:
       - "8090:8080"
@@ -19,25 +18,22 @@ services:
       - project_network
 
   dind:
-    image: docker:24.0.5-dind  # 确保使用支持 cgroup v2 的最新版本
-    container_name: dind
+    image: docker:24.0.5-dind
     privileged: true
     command: ["dockerd", "--host=tcp://0.0.0.0:2375", "--host=unix:///var/run/docker.sock"]
     ports:
       - "2375:2375"
     volumes:
       - dind_storage:/var/lib/docker
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro  # 挂载 cgroup 文件系统
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
     networks:
       - project_network
 
 volumes:
   jenkins_home:
-    driver: local
   dind_storage:
-    driver: local
 
 networks:
   project_network:
-    name: project_network  # 显式指定网络名称
+    name: project_network
     driver: bridge
