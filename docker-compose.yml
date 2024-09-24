@@ -39,4 +39,5 @@ volumes:
 
 networks:
   project_network:
+    name: project_network  # 显式指定网络名称
     driver: bridge
