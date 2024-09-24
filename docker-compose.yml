@@ -16,10 +16,10 @@ services:
     depends_on:
       - dind
     networks:
-      - project2-compose_project_network
+      - project_network
 
   dind:
-    image: docker:24.0.5-dind  # 更新镜像版本
+    image: docker:24.0.5-dind  # 确保使用支持 cgroup v2 的最新版本
     container_name: dind
     privileged: true
     command: ["dockerd", "--host=tcp://0.0.0.0:2375", "--host=unix:///var/run/docker.sock"]
@@ -29,7 +29,7 @@ services:
       - dind_storage:/var/lib/docker
       - /sys/fs/cgroup:/sys/fs/cgroup:ro  # 挂载 cgroup 文件系统
     networks:
-      - project2-compose_project_network
+      - project_network
 
 volumes:
   jenkins_home:
@@ -38,5 +38,5 @@ volumes:
     driver: local
 
 networks:
-  project2-compose_project_network:
-    external: true
+  project_network:
+    driver: bridge
