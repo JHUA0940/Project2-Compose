@@ -11,7 +11,6 @@ services:
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
-#      - /sys/fs/cgroup:/sys/fs/cgroup  # 添加此行
     environment:
       - DOCKER_HOST=tcp://dind:2375
       - JENKINS_OPTS=--prefix=/jenkins
@@ -28,7 +27,6 @@ services:
       - "2375:2375"
     volumes:
       - dind_storage:/var/lib/docker
-#      - /sys/fs/cgroup:/sys/fs/cgroup
     networks:
       - project_network
 
