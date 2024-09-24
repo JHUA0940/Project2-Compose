@@ -4,6 +4,7 @@ services:
   jenkins:
     image: custom-jenkins:latest
     user: root
+    privileged: true
     ports:
       - "8090:8080"
       - "50000:50000"
