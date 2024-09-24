@@ -2,39 +2,39 @@ version: '3.8'
 
 services:
   jenkins:
-    image: custom-jenkins:latest
+    image: custom-jenkins:latest  # Use custom Jenkins image (include Docker)
     user: root
     privileged: true
     ports:
-      - "8090:8080"
-      - "50000:50000"
+      - "8090:8080"               # Access Jenkins at port 8090
+      - "50000:50000"             # For Jenkins agents
     volumes:
-      - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
+      - jenkins_home:/var/jenkins_home            # Save Jenkins data here
+      - /var/run/docker.sock:/var/run/docker.sock # Let Jenkins use Docker
     environment:
-      - DOCKER_HOST=tcp://dind:2375
-      - JENKINS_OPTS=--prefix=/jenkins
+      - DOCKER_HOST=tcp://dind:2375     # give Docker commands to the dind service
+      - JENKINS_OPTS=--prefix=/jenkins  # Set Jenkins URL prefix
     depends_on:
-      - dind
+      - dind                            # Start dind before Jenkins
     networks:
-      - project_network
+      - project_network                 # Connect to network
 
   dind:
-    image: docker:24.0.5-dind
+    image: docker:24.0.5-dind           # Use Docker-in-Docker image
     privileged: true
     command: ["dockerd", "--host=tcp://0.0.0.0:2375", "--host=unix:///var/run/docker.sock"]
     ports:
-      - "2375:2375"
+      - "2375:2375"                     # Expose Docker daemon at port 2375
     volumes:
-      - dind_storage:/var/lib/docker
+      - dind_storage:/var/lib/docker    # Save Docker daemon data
     networks:
-      - project_network
+      - project_network                 # Connect to network
 
 volumes:
-  jenkins_home:
-  dind_storage:
+  jenkins_home:                         # store Jenkins data
+  dind_storage:                         # store Docker data
 
 networks:
   project_network:
-    name: project_network
-    driver: bridge
+    name: project_network               # custom network
+    driver: bridge                      # Use bridge network type
